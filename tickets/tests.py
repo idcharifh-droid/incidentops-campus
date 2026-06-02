@@ -111,7 +111,7 @@ class AIClassifierTestCase(TestCase):
             'Connexion WiFi impossible',
             'Je ne peux pas me connecter au reseau WiFi'
         )
-        self.assertEqual(result['category'], 'Reseau')
+        self.assertEqual(result['category'], 'Réseau')
 
     def test_classify_security_is_critical(self):
         from ai_classifier.classifier import classify_incident
