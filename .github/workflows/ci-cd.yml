@@ -49,13 +49,8 @@ jobs:
           pip install flake8 coverage
 
       - name: Vérification de la qualité du code (flake8)
-        run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-            --count \
-            --max-line-length=120 \
-            --exclude=migrations,__pycache__,static,media \
-            --statistics \
-            --ignore=E501,W503
+        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          
 
       - name: Exécution des migrations de test
         env:
