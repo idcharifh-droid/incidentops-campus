@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}Ticket #{{ ticket.id }} – IncidentOps{% endblock %}
+{% block page_title %}Ticket #{{ ticket.id }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <!-- Left: ticket info + comments -->
+  <div class="col-lg-8">
+    <!-- Ticket header -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-start justify-content-between mb-3">
+          <div>
+            <h4 class="fw-bold mb-2">{{ ticket.title }}</h4>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge badge-priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+              <span class="badge bg-{{ ticket.get_status_badge }}">{{ ticket.get_status_display }}</span>
+              {% if ticket.category %}
+              <span class="badge bg-light text-dark border">
+                <i class="bi {{ ticket.category.icon }} me-1"></i>{{ ticket.category.name }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          <small class="text-muted">#{{ ticket.id }}</small>
+        </div>
+        <div class="bg-light rounded p-3 mb-3" style="white-space:pre-wrap">{{ ticket.description }}</div>
+        <div class="row g-3 text-sm">
+          <div class="col-sm-4">
+            <small class="text-muted d-block">Créé par</small>
+            <span class="fw-semibold">{{ ticket.created_by.get_full_name|default:ticket.created_by.username }}</span>
+          </div>
+          <div class="col-sm-4">
+            <small class="text-muted d-block">Date création</small>
+            <span>{{ ticket.created_at|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="col-sm-4">
+            <small class="text-muted d-block">Dernière mise à jour</small>
+            <span>{{ ticket.updated_at|date:"d/m/Y H:i" }}</span>
+          </div>
+          {% if ticket.resolved_at %}
+          <div class="col-sm-4">
+            <small class="text-muted d-block">Résolu le</small>
+            <span class="text-success">{{ ticket.resolved_at|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="col-sm-4">
+            <small class="text-muted d-block">Durée de résolution</small>
+            <span>{{ ticket.resolution_time }} h</span>
+          </div>
+          {% endif %}
+        </div>
+        {% if ticket.ai_suggested_category or ticket.ai_suggested_priority %}
+        <div class="ai-suggestion-box p-3 mt-3">
+          <small class="text-muted"><i class="bi bi-cpu me-1"></i>Suggestion IA :</small>
+          {% if ticket.ai_suggested_category %}
+          <span class="badge bg-indigo ms-2" style="background:#4f46e5">Catégorie : {{ ticket.ai_suggested_category.name }}</span>
+          {% endif %}
+          {% if ticket.ai_suggested_priority %}
+          <span class="badge bg-secondary ms-1">Priorité : {{ ticket.get_ai_suggested_priority_display }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Attachments -->
+    {% if attachments %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-0 fw-semibold pt-3 px-4">
+        <i class="bi bi-paperclip me-2"></i>Pièces jointes
+      </div>
+      <div class="card-body px-4 pb-3 pt-0">
+        {% for att in attachments %}
+        <a href="{{ att.file.url }}" target="_blank" class="btn btn-sm btn-outline-secondary me-2 mb-2">
+          <i class="bi bi-file-earmark me-1"></i>{{ att.original_name }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Comments -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-0 fw-semibold pt-3 px-4">
+        <i class="bi bi-chat-dots me-2"></i>Commentaires ({{ comments|length }})
+      </div>
+      <div class="card-body p-4">
+        {% for comment in comments %}
+        {% if not comment.is_internal or request.user.profile.is_technician or request.user.profile.is_admin %}
+        <div class="d-flex gap-3 mb-4 {% if comment.is_internal %}bg-warning bg-opacity-10 p-2 rounded{% endif %}">
+          <div class="rounded-circle {% if comment.author == request.user %}bg-primary{% else %}bg-secondary{% endif %} text-white d-flex align-items-center justify-content-center flex-shrink-0"
+            style="width:36px;height:36px;font-size:.85rem">
+            {{ comment.author.first_name|first|default:comment.author.username|first|upper }}
+          </div>
+          <div class="flex-1">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="fw-semibold">{{ comment.author.get_full_name|default:comment.author.username }}</span>
+              {% if comment.is_internal %}
+              <span class="badge bg-warning text-dark" style="font-size:.7rem">Note interne</span>
+              {% endif %}
+              <small class="text-muted ms-auto">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+            </div>
+            <div style="white-space:pre-wrap">{{ comment.content }}</div>
+          </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <p class="text-muted text-center">Aucun commentaire.</p>
+        {% endfor %}
+
+        <!-- Add comment -->
+        {% if ticket.is_open %}
+        <hr>
+        <form method="post" action="{% url 'tickets:add_comment' ticket.pk %}">
+          {% csrf_token %}
+          <div class="mb-2">
+            <textarea name="content" class="form-control" rows="3" placeholder="Votre commentaire..." required></textarea>
+          </div>
+          {% if request.user.profile.is_technician or request.user.profile.is_admin %}
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="is_internal" id="is_internal">
+            <label class="form-check-label text-muted small" for="is_internal">Note interne (visible uniquement par les techniciens)</label>
+          </div>
+          {% endif %}
+          <button type="submit" class="btn btn-sm btn-primary">
+            <i class="bi bi-send me-1"></i>Envoyer
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: actions + history -->
+  <div class="col-lg-4">
+    <!-- Actions -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-0 fw-semibold pt-3 px-4">
+        <i class="bi bi-gear me-2"></i>Actions
+      </div>
+      <div class="card-body p-4">
+        <!-- Technician / Admin : change status -->
+        {% if request.user.profile.is_technician or request.user.profile.is_admin %}
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Changer le statut</label>
+          <form method="post" action="{% url 'tickets:update_status' ticket.pk %}">
+            {% csrf_token %}
+            <div class="input-group">
+              <select name="status" class="form-select form-select-sm">
+                {% for val, label in statuses %}
+                <option value="{{ val }}" {% if ticket.status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-sm btn-primary">OK</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Admin : assign -->
+        {% if request.user.profile.is_admin and technicians %}
+        <div class="mb-3">
+          <label class="form-label small fw-semibold text-muted">Affecter à un technicien</label>
+          <form method="post" action="{% url 'tickets:assign' ticket.pk %}">
+            {% csrf_token %}
+            <div class="input-group">
+              <select name="technician" class="form-select form-select-sm">
+                <option value="">-- Non affecté --</option>
+                {% for tech in technicians %}
+                <option value="{{ tech.pk }}" {% if ticket.assigned_to == tech %}selected{% endif %}>
+                  {{ tech.user.get_full_name|default:tech.user.username }}
+                  ({{ tech.active_ticket_count }} tickets)
+                </option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-sm btn-primary">OK</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- User : close resolved ticket -->
+        {% if ticket.created_by == request.user and ticket.status == 'resolved' %}
+        <form method="post" action="{% url 'tickets:close' ticket.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success w-100 btn-sm">
+            <i class="bi bi-check-circle me-1"></i>Confirmer la résolution & Fermer
+          </button>
+        </form>
+        {% endif %}
+
+        <!-- Info block -->
+        <hr>
+        <div class="small">
+          <div class="mb-2">
+            <span class="text-muted">Affecté à :</span>
+            <span class="fw-semibold ms-1">
+              {{ ticket.assigned_to.user.get_full_name|default:'Non affecté' }}
+            </span>
+          </div>
+          <div>
+            <span class="text-muted">Département :</span>
+            <span class="ms-1">{{ ticket.assigned_to.user.profile.department|default:'—' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 fw-semibold pt-3 px-4">
+        <i class="bi bi-clock-history me-2"></i>Historique
+      </div>
+      <div class="card-body p-4 pt-2">
+        {% for h in history %}
+        <div class="d-flex gap-2 mb-3">
+          <div class="mt-1"><i class="bi bi-arrow-right-circle text-primary"></i></div>
+          <div>
+            <div class="small fw-semibold">{{ h.field_changed|capfirst }}</div>
+            {% if h.old_value %}
+            <div class="small text-muted">{{ h.old_value }} → <span class="text-dark">{{ h.new_value }}</span></div>
+            {% else %}
+            <div class="small text-muted">{{ h.new_value }}</div>
+            {% endif %}
+            <div style="font-size:.75rem;color:#94a3b8">
+              {{ h.changed_by.username }} · {{ h.timestamp|date:"d/m/Y H:i" }}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted small">Aucun historique.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

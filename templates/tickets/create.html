@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Nouveau ticket – IncidentOps{% endblock %}
+{% block page_title %}Créer un ticket{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 pt-4 px-4">
+        <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Déclarer un incident</h5>
+      </div>
+      <div class="card-body p-4">
+        <!-- AI suggestion banner -->
+        <div id="ai-suggestion" class="ai-suggestion-box p-3 mb-4 d-none">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-cpu text-primary fs-5"></i>
+            <strong>Suggestion IA</strong>
+            <span class="badge bg-primary ms-auto" id="ai-confidence"></span>
+          </div>
+          <div class="row g-2">
+            <div class="col-auto">
+              <small class="text-muted">Catégorie :</small>
+              <span id="ai-category" class="fw-semibold ms-1"></span>
+            </div>
+            <div class="col-auto">
+              <small class="text-muted">Priorité :</small>
+              <span id="ai-priority" class="fw-semibold ms-1"></span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="applyAISuggestion()">
+            <i class="bi bi-check2 me-1"></i>Appliquer la suggestion
+          </button>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Titre de l'incident <span class="text-danger">*</span></label>
+            <input type="text" name="title" id="id_title" class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                   placeholder="Ex: Je n'arrive pas à me connecter au Wi-Fi" value="{{ form.title.value|default:'' }}">
+            {% if form.title.errors %}
+            <div class="invalid-feedback">{{ form.title.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description détaillée <span class="text-danger">*</span></label>
+            <textarea name="description" id="id_description" class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                      rows="5" placeholder="Décrivez le problème en détail : depuis quand, ce qui s'affiche, ce que vous avez essayé...">{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}
+            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Catégorie</label>
+              <select name="category" id="id_category" class="form-select">
+                <option value="">-- Laisser l'IA choisir --</option>
+                {% for cat in form.category.field.queryset %}
+                <option value="{{ cat.id }}" {% if form.category.value == cat.id|stringformat:'s' %}selected{% endif %}>
+                  {{ cat.name }}
+                </option>
+                {% endfor %}
+              </select>
+              <small class="text-muted">Laissez vide pour la classification automatique</small>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Priorité</label>
+              <select name="priority" id="id_priority" class="form-select">
+                {% for val, label in form.priority.field.choices %}
+                <option value="{{ val }}" {% if form.priority.value == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Pièce jointe</label>
+            <input type="file" name="attachment" class="form-control"
+                   accept=".jpg,.jpeg,.png,.gif,.pdf,.txt,.docx,.xlsx">
+            <small class="text-muted">Formats acceptés : images, PDF, Word, Excel (max 5 Mo)</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-send me-2"></i>Soumettre le ticket
+            </button>
+            <a href="{% url 'tickets:list' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let aiResult = null;
+let aiTimer = null;
+
+function fetchAISuggestion() {
+  const title = document.getElementById('id_title').value;
+  const description = document.getElementById('id_description').value;
+  if (title.length < 5 && description.length < 10) return;
+
+  fetch('{% url "ai_classifier:classify" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({ title, description })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success && data.result.confidence > 0.05) {
+      aiResult = data.result;
+      document.getElementById('ai-suggestion').classList.remove('d-none');
+      document.getElementById('ai-category').textContent = data.result.category;
+      const priorityMap = {low:'Faible', medium:'Moyenne', high:'Élevée', critical:'Critique'};
+      document.getElementById('ai-priority').textContent = priorityMap[data.result.priority] || data.result.priority;
+      document.getElementById('ai-confidence').textContent =
+        Math.round(data.result.confidence * 100) + '% confiance';
+    }
+  }).catch(() => {});
+}
+
+function applyAISuggestion() {
+  if (!aiResult) return;
+  // Apply category
+  const catSelect = document.getElementById('id_category');
+  for (let opt of catSelect.options) {
+    if (opt.text.trim().toLowerCase() === aiResult.category.toLowerCase()) {
+      catSelect.value = opt.value;
+      break;
+    }
+  }
+  // Apply priority
+  document.getElementById('id_priority').value = aiResult.priority;
+}
+
+['id_title', 'id_description'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    clearTimeout(aiTimer);
+    aiTimer = setTimeout(fetchAISuggestion, 1000);
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Mon tableau de bord – IncidentOps{% endblock %}
+{% block page_title %}Mon tableau de bord{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h4 class="fw-bold">Bonjour, {{ request.user.first_name|default:request.user.username }} 👋</h4>
+  <p class="text-muted">Voici l'état de vos incidents.</p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-primary">{{ total }}</div>
+      <div class="text-muted small">Total</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-warning">{{ open }}</div>
+      <div class="text-muted small">Ouverts</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-info">{{ in_progress }}</div>
+      <div class="text-muted small">En cours</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-success">{{ resolved }}</div>
+      <div class="text-muted small">Résolus</div>
+    </div>
+  </div>
+</div>
+
+{% if critical > 0 %}
+<div class="alert alert-danger d-flex align-items-center gap-2">
+  <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+  <span>Vous avez <strong>{{ critical }}</strong> incident(s) critique(s) non résolu(s).</span>
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-0 fw-semibold d-flex justify-content-between align-items-center pt-3 px-4">
+    <span><i class="bi bi-clock me-2"></i>Mes derniers tickets</span>
+    <a href="{% url 'tickets:create' %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus me-1"></i>Nouveau
+    </a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light"><tr><th>#</th><th>Titre</th><th>Priorité</th><th>Statut</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for t in recent_tickets %}
+          <tr class="ticket-row" onclick="window.location='{% url 'tickets:detail' t.pk %}'">
+            <td>#{{ t.id }}</td>
+            <td>{{ t.title|truncatechars:50 }}</td>
+            <td><span class="badge badge-priority-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+            <td><span class="badge bg-{{ t.get_status_badge }}">{{ t.get_status_display }}</span></td>
+            <td><small class="text-muted">{{ t.created_at|date:"d/m/Y" }}</small></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center py-5 text-muted">
+            <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:.5rem"></i>
+            Aucun ticket pour l'instant.
+            <div class="mt-2"><a href="{% url 'tickets:create' %}" class="btn btn-primary btn-sm">Créer mon premier ticket</a></div>
+          </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Ajouter technicien – IncidentOps{% endblock %}
+{% block page_title %}Ajouter un technicien{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4"><i class="bi bi-person-gear me-2"></i>Ajouter un technicien</h5>
+        {% if available_users %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Sélectionner un utilisateur (rôle Technicien)</label>
+            <select name="user" class="form-select" required>
+              <option value="">-- Choisir --</option>
+              {% for u in available_users %}
+              <option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }} ({{ u.email }})</option>
+              {% endfor %}
+            </select>
+            <small class="text-muted">Seuls les utilisateurs avec le rôle "Technicien" sont listés.</small>
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-plus me-1"></i>Ajouter
+          </button>
+        </form>
+        {% else %}
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          Aucun utilisateur avec le rôle "Technicien" disponible.
+          <a href="{% url 'accounts:user_create' %}" class="alert-link">Créez d'abord un utilisateur technicien.</a>
+        </div>
+        {% endif %}
+        <div class="mt-3">
+          <a href="{% url 'technicians:list' %}" class="btn btn-outline-secondary btn-sm">Retour</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

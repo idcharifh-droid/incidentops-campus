@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Techniciens – IncidentOps{% endblock %}
+{% block page_title %}Techniciens{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-person-gear me-2 text-primary"></i>Techniciens</h4>
+  <a href="{% url 'technicians:create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus me-1"></i>Ajouter
+  </a>
+</div>
+<div class="row g-3">
+  {% for tech in technicians %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+               style="width:48px;height:48px;font-size:1.2rem">
+            {{ tech.user.first_name|first|default:tech.user.username|first|upper }}
+          </div>
+          <div>
+            <div class="fw-bold">{{ tech.user.get_full_name|default:tech.user.username }}</div>
+            <div class="text-muted small">{{ tech.user.email }}</div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">Spécialisations :</small>
+          <div class="mt-1">
+            {% for cat in tech.specializations.all %}
+            <span class="badge bg-light text-dark border me-1 mb-1">{{ cat.name }}</span>
+            {% empty %}
+            <span class="text-muted small">Aucune spécialisation</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div>
+            <span class="badge {% if tech.is_available %}bg-success{% else %}bg-secondary{% endif %}">
+              {% if tech.is_available %}Disponible{% else %}Indisponible{% endif %}
+            </span>
+            <span class="badge bg-light text-dark ms-1">{{ tech.active_ticket_count }} actifs</span>
+          </div>
+          <a href="{% url 'technicians:edit' tech.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12 text-center py-5 text-muted">
+    <i class="bi bi-person-gear" style="font-size:2.5rem;display:block;margin-bottom:.5rem"></i>
+    Aucun technicien configuré.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

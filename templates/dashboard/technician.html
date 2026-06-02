@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Tableau de bord Technicien – IncidentOps{% endblock %}
+{% block page_title %}Tableau de bord Technicien{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <h4 class="fw-bold">Bonjour, {{ request.user.first_name|default:request.user.username }} 👨‍💻</h4>
+  <p class="text-muted">Gestion de vos tickets assignés.</p>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-primary">{{ my_tickets }}</div>
+      <div class="text-muted small">Mes tickets actifs</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-warning">{{ pending }}</div>
+      <div class="text-muted small">En attente</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-danger">{{ critical }}</div>
+      <div class="text-muted small">Critiques</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card text-center">
+      <div class="fs-2 fw-bold text-success">{{ resolved_count }}</div>
+      <div class="text-muted small">Résolus</div>
+    </div>
+  </div>
+</div>
+
+{% if avg_resolution_hours %}
+<div class="alert alert-info">
+  <i class="bi bi-clock me-2"></i>
+  Temps moyen de résolution : <strong>{{ avg_resolution_hours }} heures</strong>
+</div>
+{% endif %}
+
+{% if critical > 0 %}
+<div class="alert alert-danger">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  <strong>{{ critical }}</strong> ticket(s) critique(s) nécessitent votre attention immédiate !
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 fw-semibold pt-3 px-4">
+        <i class="bi bi-list-check me-2"></i>Mes tickets assignés
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>#</th><th>Titre</th><th>Priorité</th><th>Statut</th><th>Date</th></tr></thead>
+            <tbody>
+              {% for t in recent_tickets %}
+              <tr class="ticket-row" onclick="window.location='{% url 'tickets:detail' t.pk %}'">
+                <td>#{{ t.id }}</td>
+                <td>{{ t.title|truncatechars:35 }}</td>
+                <td><span class="badge badge-priority-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+                <td><span class="badge bg-{{ t.get_status_badge }}">{{ t.get_status_display }}</span></td>
+                <td><small class="text-muted">{{ t.created_at|date:"d/m/Y" }}</small></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-center py-3 text-muted">Aucun ticket assigné.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    {% if unassigned_count > 0 %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 fw-semibold pt-3 px-4">
+        <i class="bi bi-inbox me-2 text-warning"></i>Tickets non affectés ({{ unassigned_count }})
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light"><tr><th>#</th><th>Titre</th><th>Priorité</th></tr></thead>
+            <tbody>
+              {% for t in unassigned_tickets %}
+              <tr class="ticket-row" onclick="window.location='{% url 'tickets:detail' t.pk %}'">
+                <td>#{{ t.id }}</td>
+                <td>{{ t.title|truncatechars:30 }}</td>
+                <td><span class="badge badge-priority-{{ t.priority }}">{{ t.get_priority_display }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="card border-0 shadow-sm mt-4">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">Charge de travail</h6>
+        <div class="d-flex justify-content-between mb-1">
+          <small>Tickets actifs</small>
+          <small class="fw-semibold">{{ my_tickets }} / {{ technician.max_tickets }}</small>
+        </div>
+        <div class="progress mb-3" style="height:10px">
+          <div class="progress-bar {% if technician.is_overloaded %}bg-danger{% else %}bg-success{% endif %}"
+               style="width:{% widthratio my_tickets technician.max_tickets 100 %}%"></div>
+        </div>
+        {% if technician.is_overloaded %}
+        <small class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Capacité maximale atteinte</small>
+        {% else %}
+        <small class="text-success"><i class="bi bi-check-circle me-1"></i>Disponible</small>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

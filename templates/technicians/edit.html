@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Modifier technicien – IncidentOps{% endblock %}
+{% block page_title %}Modifier le technicien{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4">
+          <i class="bi bi-person-gear me-2"></i>
+          {{ technician.user.get_full_name|default:technician.user.username }}
+        </h5>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_available"
+                     id="is_available" {% if technician.is_available %}checked{% endif %}>
+              <label class="form-check-label fw-semibold" for="is_available">Disponible</label>
+            </div>
+            <small class="text-muted">Si désactivé, aucun ticket ne lui sera auto-affecté.</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nombre maximum de tickets simultanés</label>
+            <input type="number" name="max_tickets" class="form-control"
+                   value="{{ technician.max_tickets }}" min="1" max="50">
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Spécialisations</label>
+            <div class="row g-2">
+              {% for cat in all_categories %}
+              <div class="col-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox"
+                         name="specializations" value="{{ cat.id }}"
+                         id="cat_{{ cat.id }}"
+                         {% if cat in technician.specializations.all %}checked{% endif %}>
+                  <label class="form-check-label" for="cat_{{ cat.id }}">
+                    <i class="bi {{ cat.icon }} me-1"></i>{{ cat.name }}
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-save me-1"></i>Enregistrer
+            </button>
+            <a href="{% url 'technicians:list' %}" class="btn btn-outline-secondary">Annuler</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

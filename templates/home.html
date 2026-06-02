@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block public_container %}{% endblock %}
+
+{% block public_content %}
+<!-- Hero -->
+<section style="background:linear-gradient(135deg,#1a1f36 0%,#2d3561 100%);min-height:100vh;display:flex;align-items:center;">
+  <div class="container text-white py-5">
+    <div class="row align-items-center">
+
+      <div class="col-lg-6">
+        <div class="mb-3">
+          <span class="badge px-3 py-2" style="background:#4f46e5;font-size:.85rem">
+            <i class="bi bi-shield-check me-1"></i> Plateforme IT Campus
+          </span>
+        </div>
+
+        <h1 class="display-4 fw-bold mb-4" style="line-height:1.2">
+          IncidentOps<br>
+          <span style="color:#818cf8">Campus</span>
+        </h1>
+
+        <p class="lead mb-4" style="color:rgba(255,255,255,.8)">
+          Plateforme de gestion des incidents informatiques pour les universités et établissements.
+          Déclarez, suivez et résolvez vos incidents en temps réel.
+        </p>
+
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-4">
+            <i class="bi bi-person-plus me-2"></i>Créer un compte
+          </a>
+
+          <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg px-4">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-6 mt-5 mt-lg-0">
+        <div class="row g-3">
+
+          {% for icon, label, desc, color in features %}
+          <div class="col-6">
+            <div class="p-3 rounded-3" style="background:rgba(255,255,255,.07)">
+              <i class="bi {{ icon }} mb-2" style="font-size:1.8rem;color:{{ color }}"></i>
+              <div class="fw-semibold">{{ label }}</div>
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6)">
+                {{ desc }}
+              </div>
+            </div>
+          </div>
+
+          {% empty %}
+
+          <div class="col-6">
+            <div class="p-3 rounded-3" style="background:rgba(255,255,255,.07)">
+              <i class="bi bi-ticket-detailed mb-2" style="font-size:1.8rem;color:#818cf8"></i>
+              <div class="fw-semibold">Tickets d'incidents</div>
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6)">
+                Déclarez facilement
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="p-3 rounded-3" style="background:rgba(255,255,255,.07)">
+              <i class="bi bi-cpu mb-2" style="font-size:1.8rem;color:#34d399"></i>
+              <div class="fw-semibold">IA intégrée</div>
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6)">
+                Classification automatique
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="p-3 rounded-3" style="background:rgba(255,255,255,.07)">
+              <i class="bi bi-person-gear mb-2" style="font-size:1.8rem;color:#fbbf24"></i>
+              <div class="fw-semibold">Gestion des rôles</div>
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6)">
+                Utilisateurs, techniciens, admins
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="p-3 rounded-3" style="background:rgba(255,255,255,.07)">
+              <i class="bi bi-speedometer2 mb-2" style="font-size:1.8rem;color:#f87171"></i>
+              <div class="fw-semibold">Tableaux de bord</div>
+              <div style="font-size:.8rem;color:rgba(255,255,255,.6)">
+                Statistiques en temps réel
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+{% endblock %}

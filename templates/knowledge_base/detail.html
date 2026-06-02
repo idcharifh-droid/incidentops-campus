@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.title }} – IncidentOps{% endblock %}
+{% block page_title %}{{ article.title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-5">
+        {% if article.category %}
+        <span class="badge bg-light text-dark border mb-3">
+          <i class="bi {{ article.category.icon }} me-1"></i>{{ article.category.name }}
+        </span>
+        {% endif %}
+        <h3 class="fw-bold mb-4">{{ article.title }}</h3>
+        <div class="text-muted mb-4" style="white-space:pre-wrap;line-height:1.8">{{ article.content }}</div>
+        <hr>
+        <div class="d-flex justify-content-between text-muted small">
+          <span><i class="bi bi-person me-1"></i>{{ article.author.get_full_name|default:article.author.username }}</span>
+          <span><i class="bi bi-eye me-1"></i>{{ article.views_count }} vues</span>
+          <span>{{ article.updated_at|date:"d/m/Y" }}</span>
+        </div>
+        {% if request.user.profile.is_admin or request.user.profile.is_technician %}
+        <div class="mt-3">
+          <a href="{% url 'knowledge_base:edit' article.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Modifier
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="mt-3">
+      <a href="{% url 'knowledge_base:list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Retour
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

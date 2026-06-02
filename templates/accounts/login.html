@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Connexion – IncidentOps{% endblock %}
+{% block public_container %}container py-5{% endblock %}
+{% block public_content %}
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+    <div class="text-center mb-4">
+      <i class="bi bi-shield-check" style="font-size:3rem;color:#4f46e5"></i>
+      <h2 class="fw-bold mt-2">IncidentOps Campus</h2>
+      <p class="text-muted">Connectez-vous à votre compte</p>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            <input type="{{ field.field.widget.input_type }}"
+                   name="{{ field.html_name }}"
+                   id="{{ field.id_for_label }}"
+                   class="form-control {% if field.errors %}is-invalid{% endif %}"
+                   {% if field.value %}value="{{ field.value }}"{% endif %}>
+            {% for error in field.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+          <button type="submit" class="btn btn-primary w-100 mt-2">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Connexion
+          </button>
+        </form>
+        <hr class="my-3">
+        <div class="text-center">
+          <small class="text-muted">Pas encore de compte ?
+            <a href="{% url 'accounts:register' %}">S'inscrire</a>
+          </small>
+        </div>
+        <div class="text-center mt-2">
+          <small><a href="{% url 'accounts:password_reset' %}">Mot de passe oublié ?</a></small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

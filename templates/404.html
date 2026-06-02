@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Page introuvable – IncidentOps{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <div style="font-size:6rem;color:#4f46e5">404</div>
+  <h2 class="fw-bold">Page introuvable</h2>
+  <p class="text-muted">La page que vous cherchez n'existe pas ou a été déplacée.</p>
+  <a href="{% url 'home' %}" class="btn btn-primary mt-3">
+    <i class="bi bi-house me-2"></i>Retour à l'accueil
+  </a>
+</div>
+{% endblock %}
