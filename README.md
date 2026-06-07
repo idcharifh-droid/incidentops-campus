@@ -1,4 +1,4 @@
-# IncidentOps Campus 🛡️
+# IncidentOps Campus 
 
 **Plateforme de gestion des incidents informatiques**  
 Projet de fin de module – Django – Filières d'ingénieurs 2025-2026
@@ -178,7 +178,7 @@ python manage.py runserver
 
 ---
 
-## 🗄️ Configuration de la base de données (settings.py)
+##  Configuration de la base de données (settings.py)
 
 Le fichier `incidentops/settings.py` lit les variables depuis `.env` via `python-decouple` :
 
@@ -199,7 +199,7 @@ DATABASES = {
 
 ---
 
-## 👥 Comptes de démonstration
+##  Comptes de démonstration
 
 Après `python manage.py populate_data` :
 
@@ -213,7 +213,7 @@ Après `python manage.py populate_data` :
 
 ---
 
-## 🤖 Module IA – Classification automatique
+##  Module IA – Classification automatique
 
 Le module `ai_classifier/classifier.py` utilise :
 - **TF-IDF** (`scikit-learn`) pour vectoriser les descriptions d'incidents
@@ -234,7 +234,7 @@ Sur la page de création de ticket, l'IA suggère automatiquement catégorie et 
 
 ---
 
-## 🔐 Sécurité
+##  Sécurité
 
 | Mesure | Implémentation |
 |--------|---------------|
@@ -250,7 +250,7 @@ Sur la page de création de ticket, l'IA suggère automatiquement catégorie et 
 
 ---
 
-## 🚀 CI/CD GitHub Actions
+## CI/CD GitHub Actions
 
 Le fichier `.github/workflows/ci-cd.yml` exécute à chaque push sur `main` :
 
@@ -265,7 +265,7 @@ Le fichier `.github/workflows/ci-cd.yml` exécute à chaque push sur `main` :
 
 ---
 
-## 🧪 Lancer les tests
+##  Lancer les tests
 
 ```bash
 # Tests complets
@@ -280,7 +280,7 @@ coverage html    # → htmlcov/index.html
 
 ---
 
-## 🌐 Déploiement production
+##  Déploiement production
 
 ```bash
 # Variables d'environnement (.env)
@@ -300,7 +300,7 @@ docker-compose up -d --build
 
 ---
 
-## 📋 Commandes utiles
+## Commandes utiles
 
 ```bash
 # Migrations
@@ -325,7 +325,7 @@ python manage.py shell
 
 ---
 
-## 🛠️ Technologies utilisées
+##  Technologies utilisées
 
 | Composant | Technologie |
 |-----------|-------------|
