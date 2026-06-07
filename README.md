@@ -5,7 +5,7 @@ Projet de fin de module – Django – Filières d'ingénieurs 2025-2026
 
 ---
 
-## 📁 Arborescence complète du projet
+##  Arborescence complète du projet
 
 ```
 incidentops/                          ← Racine du projet
@@ -17,7 +17,7 @@ incidentops/                          ← Racine du projet
 ├── entrypoint.sh                     ← Script de démarrage du conteneur
 ├── nginx.conf                        ← Configuration Nginx (reverse proxy)
 ├── .env.example                      ← Modèle de variables d'environnement
-├── .env                              ← Variables d'environnement (⚠️ non committé)
+├── .env                              ← Variables d'environnement (non committé)
 ├── .gitignore                        ← Fichiers exclus de Git
 │
 ├── .github/
@@ -121,7 +121,7 @@ incidentops/                          ← Racine du projet
 
 ---
 
-## ⚙️ Installation & Démarrage
+##  Installation & Démarrage
 
 ### Méthode 1 — Avec Docker Compose (recommandée)
 
